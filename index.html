@@ -4,28 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Learn with MK — 文法</title>
-<meta name="theme-color" content="#b8860b">
+<meta name="theme-color" content="#161616">
 <meta name="description" content="Learn with MK — JLPT N5–N1 Japanese grammar with Myanmar explanations, quizzes, and SRS review.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;900&family=Noto+Sans+Myanmar:wght@300;400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app-features.css?v=4">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650;12..96,700;12..96,800&family=Noto+Sans+Myanmar:wght@300;400;700&family=Noto+Serif+JP:wght@400;600;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #f0ece3;
-    --paper: #0a0a0a;
-    --cream: #1a1a1a;
-    --red: #c9a230;
-    --gold: #d9b340;
-    --muted: #9a9a9a;
-    --border: #2a2a2a;
-    --highlight: #2a2412;
-    --n5: #4fa676;
-    --n4: #4d92c8;
-    --n3: #a96fc8;
-    --n2: #d97a3f;
-    --n1: #d35a52;
+    --ink: #ecece8;
+    --paper: #0e0f10;
+    --cream: #171819;
+    --red: #f07178;
+    --gold: #2dd4bf;
+    --muted: #9aa19b;
+    --border: #2a2d2c;
+    --highlight: #14352f;
+    --n5: #2dd4bf;
+    --n4: #7eb6ff;
+    --n3: #c4a8ff;
+    --n2: #f0a35e;
+    --n1: #f07178;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -547,13 +546,15 @@
     position: fixed; inset: 0; z-index: 9995;
     background: var(--paper);
     display: flex; flex-direction: column;
-    transform: translateX(100%);
-    transition: transform 0.25s ease;
+    transform: translate3d(100%, 0, 0);
+    transition: transform 0.34s cubic-bezier(0.32, 0.72, 0, 1);
     visibility: hidden;
     pointer-events: none; /* closed: never block page scroll on mobile */
+    will-change: transform;
+    backface-visibility: hidden;
   }
   .detail-overlay.open {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
     visibility: visible;
     pointer-events: auto;
   }
@@ -601,7 +602,10 @@
   .detail-hero .dh-my { font-size: 0.95rem; color: var(--ink); margin-top: 4px; font-family: 'Noto Sans Myanmar', sans-serif; }
   .detail-body { padding: 2px 18px 90px; }
   .detail-body .section-label:first-child { margin-top: 4px; }
-  body.detail-open { overflow: hidden; }
+  body.detail-open {
+    /* scroll lock handled in JS to avoid jump-to-top on mobile */
+    overflow: hidden;
+  }
 
   @media print {
     body > *:not(.print-sheet):not(.kc-print-note) { display: none !important; }
@@ -634,38 +638,38 @@
   :root[data-theme="day"] .theme-toggle .ico-moon { display: none; }
   :root[data-theme="day"] .theme-toggle .ico-sun  { display: inline; }
 
-  /* ===== DAY MODE (light theme) — DEFAULT. NIGHT MODE = original dark ===== */
+  /* ===== DAY MODE — Sumi Desk light ===== */
   :root[data-theme="day"] {
-    --ink: #221d16;
-    --paper: #f4f1ea;
-    --cream: #ece7db;
-    --red: #9a7913;
-    --gold: #b8860b;
-    --muted: #6f6a5f;
-    --border: #e1dacc;
-    --highlight: #fbf3d8;
-    /* level colors (--n5..--n1) kept — they read well on light */
+    --ink: #161616;
+    --paper: #e8e9eb;
+    --cream: #f4f4f2;
+    --red: #c62828;
+    --gold: #0f766e;
+    --muted: #5c635f;
+    --border: #c9cdc8;
+    --highlight: #d7ebe6;
   }
-  :root[data-theme="day"] .site-header { background: #fffdf8; color: var(--ink); }
-  :root[data-theme="day"] .logo-main   { color: var(--ink); }
-  :root[data-theme="day"] .search-box  { background: #ffffff; }
-  :root[data-theme="day"] .grammar-card { background: #ffffff; }
+  :root[data-theme="day"] .site-header { background: transparent; color: var(--ink); }
+  :root[data-theme="day"] .logo-main   { color: inherit; }
+  :root[data-theme="day"] .search-box  { background: #fafaf8; }
+  :root[data-theme="day"] .grammar-card { background: transparent; }
   :root[data-theme="day"] .grammar-card.open { box-shadow: none; }
-  :root[data-theme="day"] .card-body   { background: #fbf9f3; }
-  :root[data-theme="day"] .example-my  { color: #5b574c; }
-  :root[data-theme="day"] .dia-bubble .d-my { color: #5b574c; }
-  :root[data-theme="day"] .meaning-box { background: #fdf7e6; }
-  :root[data-theme="day"] .dialogue-box { background: #eef4fa; border-color: #d3e2f0; }
-  :root[data-theme="day"] .dia-bubble  { background: #ffffff; border-color: #dde6ee; }
-  :root[data-theme="day"] .site-footer { background: #fffdf8; }
-  :root[data-theme="day"] .detail-header { background: #fffdf8; }
-  :root[data-theme="day"] .level-banner.n5 { background: #e9f5ef; }
-  :root[data-theme="day"] .level-banner.n4 { background: #e7f0f8; }
+  :root[data-theme="day"] .card-body   { background: #f0f1ef; }
+  :root[data-theme="day"] .example-my  { color: #5c635f; }
+  :root[data-theme="day"] .dia-bubble .d-my { color: #5c635f; }
+  :root[data-theme="day"] .meaning-box { background: #d7ebe6; }
+  :root[data-theme="day"] .dialogue-box { background: #e8eef2; border-color: #c9d5dc; }
+  :root[data-theme="day"] .dia-bubble  { background: #fafaf8; border-color: #c9cdc8; }
+  :root[data-theme="day"] .site-footer { background: transparent; }
+  :root[data-theme="day"] .detail-header { background: #f4f4f2; }
+  :root[data-theme="day"] .level-banner.n5 { background: #e4f3ef; }
+  :root[data-theme="day"] .level-banner.n4 { background: #e7eef6; }
   :root[data-theme="day"] .level-banner.n3 { background: #f3ebf9; }
-  :root[data-theme="day"] .level-banner.n2 { background: #fbefe5; }
-  :root[data-theme="day"] .level-banner.n1 { background: #fceae8; }
+  :root[data-theme="day"] .level-banner.n2 { background: #f8efe4; }
+  :root[data-theme="day"] .level-banner.n1 { background: #f8e8e7; }
   .detail-level { display: none !important; }
 </style>
+<link rel="stylesheet" href="app-features.css?v=11">
 <script>
   (function(){
     var t = 'day';
@@ -69241,7 +69245,8 @@
 </footer>
 
 <script>
-  let currentLevel = 'n5';
+  var currentLevel = 'n5';
+  window.currentLevel = currentLevel;
 
   // ===== Day / Night theme =====
   function applyTheme(t){
@@ -69264,6 +69269,7 @@
     document.getElementById('sec-' + level).classList.add('active');
     btn.classList.add('active-' + level);
     currentLevel = level;
+    window.currentLevel = level;
     // Clear search
     document.getElementById('searchInput').value = '';
     filterCards('');
@@ -69288,10 +69294,18 @@
     lvlEl.textContent = (lvl ? lvl.toUpperCase() : '');
     lvlEl.className = 'detail-level lv-' + (lvl || '');
     var ov = document.getElementById('detailOverlay');
-    ov.classList.add('open');
-    ov.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('detail-open');
     var sc = ov.querySelector('.detail-scroll'); if (sc) sc.scrollTop = 0;
+    // Prepare off-screen, then slide in from the right (smooth on mobile)
+    ov.classList.remove('open');
+    ov.style.visibility = 'visible';
+    ov.style.pointerEvents = 'auto';
+    ov.setAttribute('aria-hidden', 'false');
+    if (window.lwmLockScroll) window.lwmLockScroll();
+    document.body.classList.add('detail-open');
+    void ov.offsetWidth;
+    requestAnimationFrame(function () {
+      ov.classList.add('open');
+    });
     try { history.pushState({ kcDetail: true }, ''); } catch (e) {}
   }
 
@@ -69299,13 +69313,25 @@
     var ov = document.getElementById('detailOverlay');
     ov.classList.remove('open');
     ov.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('detail-open');
-    setTimeout(function () {
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
       if (!ov.classList.contains('open')) {
+        ov.style.visibility = 'hidden';
+        ov.style.pointerEvents = 'none';
         document.getElementById('detailBody').innerHTML = '';
         document.getElementById('detailHero').innerHTML = '';
       }
-    }, 300);
+      document.body.classList.remove('detail-open');
+      if (window.lwmUnlockScroll) window.lwmUnlockScroll();
+    }
+    ov.addEventListener('transitionend', function onEnd(e) {
+      if (e.propertyName && e.propertyName.indexOf('transform') === -1) return;
+      ov.removeEventListener('transitionend', onEnd);
+      finish();
+    });
+    setTimeout(finish, 420);
   }
 
   function closeDetail() {
@@ -69358,6 +69384,6 @@
     if (inField(e.target)) return;
   });
 </script>
-<script src="app-features.js?v=4" defer></script>
+<script src="app-features.js?v=11" defer></script>
 </body>
 </html>

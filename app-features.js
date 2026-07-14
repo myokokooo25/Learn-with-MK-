@@ -163,23 +163,54 @@
 
   /* ---------- header / panels ---------- */
   function injectHeaderNav() {
-    var right = $('.header-right');
-    if (!right || right.querySelector('.lwm-nav')) return;
-    var nav = document.createElement('div');
-    nav.className = 'lwm-nav';
-    nav.innerHTML =
-      '<button type="button" class="lwm-nav-btn has-badge" data-panel="progress" title="Progress"><span>📊</span><span class="lwm-label"> Progress</span></button>' +
-      '<button type="button" class="lwm-nav-btn has-badge" data-panel="favorites" title="Favorites"><span>♥</span><span class="lwm-label"> Fav</span><span class="lwm-count" id="favCount">0</span></button>' +
-      '<button type="button" class="lwm-nav-btn has-badge" data-panel="review" title="SRS Review"><span>🔁</span><span class="lwm-label"> Review</span><span class="lwm-count" id="reviewCount">0</span></button>' +
-      '<button type="button" class="lwm-nav-btn" data-panel="quiz" title="Quiz"><span>✏️</span><span class="lwm-label"> Quiz</span></button>' +
-      '<button type="button" class="lwm-nav-btn" id="printLevelBtn" title="Print level sheet"><span>🖨</span><span class="lwm-label"> Print</span></button>';
-    right.insertBefore(nav, right.firstChild);
-    nav.addEventListener('click', function (e) {
+    var header = $('.site-header');
+    if (!header || header.classList.contains('lwm-masthead')) return;
+
+    var themeBtn = $('#themeToggle');
+    var themeHtml = themeBtn
+      ? themeBtn.outerHTML
+      : '<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Day / Night mode" aria-label="Toggle day / night mode"><span class="t-ico ico-sun">&#9728;</span><span class="t-ico ico-moon">&#9790;</span></button>';
+
+    header.classList.add('lwm-masthead');
+    header.innerHTML =
+      '<div class="mast-band">' +
+      '<div class="mast-shell">' +
+      '<div class="mast-top">' +
+      '<div class="mk-hanko" aria-hidden="true">学</div>' +
+      '<div class="mast-copy">' +
+      '<p class="mast-kicker">日本語文法 · ဂျပန်သဒ္ဒါ</p>' +
+      '<h1 class="logo-main">Learn with MK</h1>' +
+      '<p class="mast-tag">JLPT grammar desk · Myanmar explanations</p>' +
+      '</div>' +
+      '<div class="mast-actions">' +
+      '<button type="button" class="mast-cta is-quiet" id="mastCta">Review</button>' +
+      themeHtml +
+      '</div>' +
+      '</div>' +
+      '</div>' +
+      '</div>' +
+      '<nav class="study-rail" aria-label="Study tools">' +
+      '<div class="mast-shell study-rail-inner">' +
+      '<button type="button" data-panel="progress"><span class="en">Progress</span></button>' +
+      '<button type="button" data-panel="favorites"><span class="en">Saved</span><span class="count" id="favCount">0</span></button>' +
+      '<button type="button" data-panel="review" id="reviewRailBtn"><span class="en">Review</span><span class="count" id="reviewCount">0</span></button>' +
+      '<button type="button" data-panel="quiz"><span class="en">Quiz</span></button>' +
+      '<button type="button" id="printLevelBtn"><span class="en">Print</span></button>' +
+      '</div>' +
+      '</nav>';
+
+    var rail = $('.study-rail');
+    rail.addEventListener('click', function (e) {
       var btn = e.target.closest('[data-panel]');
       if (btn) openPanel(btn.getAttribute('data-panel'));
     });
     $('#printLevelBtn').addEventListener('click', function () {
       printLevelSheet(window.currentLevel || 'n5');
+    });
+    $('#mastCta').addEventListener('click', function () {
+      var due = dueReviews().length;
+      if (due > 0) openPanel('review');
+      else openPanel('quiz');
     });
   }
 
@@ -255,38 +286,114 @@
     );
   }
 
+  function lockScroll() {
+    if (document.body.dataset.scrollLocked === '1') return;
+    var y = window.scrollY || window.pageYOffset || 0;
+    document.body.dataset.scrollLocked = '1';
+    document.body.dataset.scrollY = String(y);
+    document.body.style.position = 'fixed';
+    document.body.style.top = '-' + y + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function unlockScroll() {
+    if (document.body.dataset.scrollLocked !== '1') return;
+    if (document.body.classList.contains('detail-open') ||
+        document.body.classList.contains('lwm-panel-open')) {
+      return;
+    }
+    var y = parseInt(document.body.dataset.scrollY || '0', 10) || 0;
+    delete document.body.dataset.scrollLocked;
+    delete document.body.dataset.scrollY;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    document.documentElement.style.overflowY = 'auto';
+    window.scrollTo(0, y);
+  }
+
+  window.lwmLockScroll = lockScroll;
+  window.lwmUnlockScroll = unlockScroll;
+
+  function slideInFromRight(el) {
+    if (!el) return;
+    el.classList.remove('open');
+    el.style.visibility = 'visible';
+    el.style.pointerEvents = 'auto';
+    void el.offsetWidth;
+    requestAnimationFrame(function () {
+      el.classList.add('open');
+    });
+  }
+
+  function slideOutToRight(el, onDone) {
+    if (!el) {
+      if (onDone) onDone();
+      return;
+    }
+    el.classList.remove('open');
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      if (!el.classList.contains('open')) {
+        el.style.visibility = 'hidden';
+        el.style.pointerEvents = 'none';
+      }
+      if (onDone) onDone();
+    }
+    el.addEventListener('transitionend', function onEnd(e) {
+      if (e.propertyName && e.propertyName.indexOf('transform') === -1) return;
+      el.removeEventListener('transitionend', onEnd);
+      finish();
+    });
+    setTimeout(finish, 420);
+  }
+
   function openPanel(id) {
-    closeAllPanels();
+    closeAllPanels(true);
     var p = $('#panel-' + id);
     if (!p) return;
     if (id === 'progress') renderProgress();
     if (id === 'favorites') renderFavorites();
     if (id === 'review') renderReview();
     if (id === 'quiz') renderQuizSetup();
-    p.classList.add('open');
     p.setAttribute('aria-hidden', 'false');
-    p.style.pointerEvents = 'auto';
     document.body.classList.add('lwm-panel-open');
+    lockScroll();
+    slideInFromRight(p);
   }
 
   function closePanel(id) {
     var p = $('#panel-' + id);
     if (!p) return;
-    p.classList.remove('open');
     p.setAttribute('aria-hidden', 'true');
-    p.style.pointerEvents = 'none';
-    if (!$all('.lwm-panel.open').length) document.body.classList.remove('lwm-panel-open');
-    unlockPageScroll();
+    slideOutToRight(p, function () {
+      if (!$all('.lwm-panel.open').length) {
+        document.body.classList.remove('lwm-panel-open');
+        unlockScroll();
+      }
+      unlockPageScroll();
+    });
   }
 
-  function closeAllPanels() {
-    $all('.lwm-panel.open').forEach(function (p) {
+  function closeAllPanels(keepScrollLock) {
+    $all('.lwm-panel').forEach(function (p) {
       p.classList.remove('open');
       p.setAttribute('aria-hidden', 'true');
+      p.style.visibility = 'hidden';
       p.style.pointerEvents = 'none';
     });
-    document.body.classList.remove('lwm-panel-open');
-    unlockPageScroll();
+    if (!keepScrollLock) {
+      document.body.classList.remove('lwm-panel-open');
+      unlockPageScroll();
+    }
   }
 
   document.addEventListener('click', function (e) {
@@ -425,8 +532,20 @@
     var revN = dueReviews().length;
     var fc = $('#favCount');
     var rc = $('#reviewCount');
+    var rb = $('#reviewRailBtn');
+    var cta = $('#mastCta');
     if (fc) fc.textContent = String(favN);
     if (rc) rc.textContent = String(revN);
+    if (rb) rb.classList.toggle('is-hot', revN > 0);
+    if (cta) {
+      if (revN > 0) {
+        cta.classList.remove('is-quiet');
+        cta.innerHTML = 'Continue review <span class="cta-count">' + revN + '</span>';
+      } else {
+        cta.classList.add('is-quiet');
+        cta.textContent = 'Start quiz';
+      }
+    }
   }
 
   function renderProgress() {
@@ -663,11 +782,12 @@
     if (!window.openDetail || window.openDetail._lwm) return;
     _openDetail = window.openDetail;
     window.openDetail = function (card) {
-      var ov = $('#detailOverlay');
-      if (ov) ov.style.pointerEvents = 'auto';
       _openDetail(card);
       currentDetailId = card.dataset.id;
-      enhanceDetail(card);
+      // Let the slide start first, then inject study chrome (avoids jank)
+      requestAnimationFrame(function () {
+        enhanceDetail(card);
+      });
     };
     window.openDetail._lwm = true;
   }
@@ -863,14 +983,29 @@
   function renderQuizSetup() {
     var body = $('#panel-body-quiz');
     var level = window.currentLevel || 'n5';
+    var levels = ['n5', 'n4', 'n3', 'n2', 'n1'];
     body.innerHTML =
       '<div class="quiz-setup">' +
       '<h3>Quiz</h3>' +
-      '<p>Test yourself with patterns from the selected level (or favorites).</p>' +
+      '<p>Pick a JLPT level, then choose question type and length.</p>' +
+      '<div class="quiz-opts quiz-levels" role="radiogroup" aria-label="JLPT level">' +
+      levels
+        .map(function (lv) {
+          return (
+            '<label class="quiz-level-opt">' +
+            '<input type="radio" name="qlevel" value="' +
+            lv +
+            '"' +
+            (lv === level ? ' checked' : '') +
+            '> ' +
+            lv.toUpperCase() +
+            '</label>'
+          );
+        })
+        .join('') +
+      '</div>' +
       '<div class="quiz-opts">' +
-      '<label><input type="radio" name="qsrc" value="level" checked> Current level (' +
-      level.toUpperCase() +
-      ')</label>' +
+      '<label><input type="radio" name="qsrc" value="level" checked> Selected level</label>' +
       '<label><input type="radio" name="qsrc" value="favorites"> Favorites only</label>' +
       '<label><input type="radio" name="qsrc" value="learning"> Learning items</label>' +
       '</div>' +
@@ -889,10 +1024,10 @@
     $('#startQuizBtn').onclick = startQuiz;
   }
 
-  function quizPool(src) {
-    var level = window.currentLevel || 'n5';
+  function quizPool(src, level) {
+    var lv = level || window.currentLevel || 'n5';
     var cards = allCards();
-    if (src === 'level') cards = $all('#list-' + level + ' .grammar-card');
+    if (src === 'level') cards = $all('#list-' + lv + ' .grammar-card');
     else if (src === 'favorites')
       cards = cards.filter(function (c) {
         return !!store.favorites[c.dataset.id];
@@ -921,13 +1056,17 @@
     var src = ($('input[name="qsrc"]:checked') || {}).value || 'level';
     var type = ($('input[name="qtype"]:checked') || {}).value || 'my2jp';
     var count = parseInt(($('input[name="qcount"]:checked') || {}).value || '5', 10);
-    var pool = quizPool(src);
+    var level = ($('input[name="qlevel"]:checked') || {}).value || window.currentLevel || 'n5';
+    if (src === 'level') {
+      window.currentLevel = level;
+    }
+    var pool = quizPool(src, level);
     if (pool.length < 4) {
-      alert('Need at least 4 grammar items in this pool.');
+      alert('Need at least 4 grammar items in this pool. Try another level or add favorites.');
       return;
     }
     var questions = shuffle(pool).slice(0, Math.min(count, pool.length));
-    quizState = { type: type, questions: questions, index: 0, score: 0, pool: pool };
+    quizState = { type: type, questions: questions, index: 0, score: 0, pool: pool, level: level };
     renderQuizQuestion();
   }
 
@@ -1222,9 +1361,11 @@
       window.hideDetailPanel = function () {
         currentDetailId = null;
         _hide();
-        var ov = $('#detailOverlay');
-        if (ov) ov.style.pointerEvents = 'none';
-        unlockPageScroll();
+        // pointer-events / scroll unlock happen after slide-out in hideDetailPanel
+        setTimeout(function () {
+          unlockPageScroll();
+          unlockScroll();
+        }, 420);
       };
       window.hideDetailPanel._lwm = true;
     }
@@ -1242,6 +1383,9 @@
     var detail = $('#detailOverlay');
     if (detail && !detail.classList.contains('open')) {
       detail.style.pointerEvents = 'none';
+      if (detail.style.visibility !== 'visible' || !detail.classList.contains('open')) {
+        /* leave visibility to slide helpers */
+      }
     }
     $all('.lwm-panel').forEach(function (p) {
       if (!p.classList.contains('open')) p.style.pointerEvents = 'none';
@@ -1249,8 +1393,7 @@
     });
     if (!document.body.classList.contains('detail-open') &&
         !document.body.classList.contains('lwm-panel-open')) {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflowY = 'auto';
+      unlockScroll();
     }
   }
 

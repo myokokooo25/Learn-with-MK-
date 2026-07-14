@@ -1,9 +1,9 @@
-const CACHE = 'lwm-v4';
+const CACHE = 'lwm-v11';
 const ASSETS = [
   './',
   './index.html',
-  './app-features.css?v=4',
-  './app-features.js?v=4',
+  './app-features.css?v=6',
+  './app-features.js?v=6',
   './manifest.webmanifest',
   './icon.svg',
 ];

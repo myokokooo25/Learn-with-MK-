@@ -1,7 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Learn with MK">
-  <rect width="128" height="128" rx="28" fill="#1a1510"/>
-  <rect x="10" y="10" width="108" height="108" rx="22" fill="#f4f1ea"/>
-  <text x="64" y="78" text-anchor="middle" font-family="Georgia, 'Noto Serif JP', serif" font-size="52" font-weight="700" fill="#b8860b">‡</text>
-  <circle cx="98" cy="30" r="14" fill="#4fa676"/>
-  <text x="98" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#fff">MK</text>
+  <rect width="128" height="128" fill="#161616"/>
+  <rect x="28" y="28" width="72" height="72" rx="4" fill="none" stroke="#ecece8" stroke-width="4"/>
+  <text x="64" y="80" text-anchor="middle" font-family="Noto Serif JP, serif" font-size="42" font-weight="900" fill="#ecece8">?</text>
+  <rect x="0" y="118" width="128" height="10" fill="#0f766e"/>
 </svg>
