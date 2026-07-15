@@ -1323,6 +1323,10 @@
 
   /* ---------- PWA ---------- */
   function registerPwa() {
+    // Native Capacitor shell already bundles assets — skip service worker there
+    if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+      return;
+    }
     if (!('serviceWorker' in navigator)) return;
     navigator.serviceWorker.register('./sw.js').catch(function () {});
   }

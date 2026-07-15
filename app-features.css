@@ -859,7 +859,8 @@ body::before {
 .print-sheet { display: none; }
 
 body.detail-open,
-body.lwm-panel-open {
+body.lwm-panel-open,
+body.kanji-detail-open {
   overflow: hidden;
   touch-action: none;
 }

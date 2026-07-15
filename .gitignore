@@ -1,0 +1,20 @@
+node_modules/
+www/
+data/raw-kanji-*.json
+.DS_Store
+*.log
+*.apk
+*.aab
+Learn-with-MK-debug.apk
+*.keystore
+*.jks
+
+# Android local / build
+android/.gradle/
+android/app/build/
+android/build/
+android/captures/
+android/local.properties
+android/.idea/
+android/*.iml
+android/app/.cxx/

@@ -2,28 +2,44 @@
 
 Japanese grammar reference (JLPT N5–N1) with Japanese and Burmese explanations, plus study tools.
 
-## Run
+## Run (web)
 
 ```bash
-npx serve .
+npm install
+npm run serve
 ```
 
-Or open `index.html` in a browser (PWA install works best over `http://localhost`).
+Or: `npx serve .` / open `index.html` in a browser.
+
+## Android app
+
+The same UI is wrapped with **Capacitor**. See **[ANDROID.md](./ANDROID.md)** for full steps.
+
+Short version (needs [Android Studio](https://developer.android.com/studio)):
+
+```bash
+npm install
+npm run web:sync
+npx cap add android
+npm run cap:sync
+npm run android:open
+```
+
+Then run or build an APK from Android Studio.
 
 ## Study features
 
-**High impact**
+**Grammar**
 - Progress tracking (Learning / Mastered) with per-level %
-- Favorites
-- Quizzes (Myanmar→JP, JP→meaning, fill-in-the-blank)
-- Spaced repetition review queue
-- Audio pronunciation (browser TTS)
+- Favorites, quizzes (N5–N1), SRS review, TTS, notes, print, PWA
 
-**Medium impact**
-- Search modes: All / မြန်မာ / 日本語 / EN
-- Related / often-confused grammar links
-- Personal notes per grammar point
-- Offline PWA (installable)
-- Print level sheet or single grammar card
+**Kanji (new dashboard)**
+- JLPT N5–N1 kanji grid (2,211 characters)
+- Onyomi / kunyomi / English / Myanmar / stroke count
+- Stroke-order diagram (KanjiVG, when online)
+- Save / Learning / Mastered per kanji
+- Search by character, reading, English, or Myanmar
 
-Progress is stored in your browser (`localStorage`).
+Toggle **Grammar | Kanji** in the header. Data sources: see [DATA_ATTRIBUTION.md](./DATA_ATTRIBUTION.md).
+
+Progress is stored in your browser / WebView (`localStorage`).
