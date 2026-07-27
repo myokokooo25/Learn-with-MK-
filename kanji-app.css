@@ -22,6 +22,91 @@
   background: var(--gold);
   color: #fff;
 }
+.mode-switch .ms-short { display: none; }
+@media (max-width: 720px) {
+  .mode-switch {
+    margin-right: 4px;
+  }
+  .mode-switch button {
+    padding: 8px 9px;
+    font-size: 0.85rem;
+    min-width: 36px;
+  }
+  .mode-switch .ms-full { display: none; }
+  .mode-switch .ms-short { display: inline; }
+}
+
+.study-today {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1.5px solid var(--gold);
+  background: color-mix(in srgb, var(--gold) 10%, var(--surface));
+  color: var(--ink);
+  border-radius: 2px;
+  padding: 11px 14px;
+  margin: 0 0 14px;
+  font-family: 'Bricolage Grotesque', 'Noto Sans Myanmar', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+.study-today:hover {
+  background: color-mix(in srgb, var(--gold) 18%, var(--surface));
+}
+
+.sticky-tools {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  padding: 10px 0 12px;
+  margin-bottom: 10px;
+  background: linear-gradient(
+    180deg,
+    var(--paper) 70%,
+    color-mix(in srgb, var(--paper) 0%, transparent)
+  );
+  backdrop-filter: blur(6px);
+}
+
+.load-more {
+  appearance: none;
+  display: block;
+  width: 100%;
+  margin: 12px 0 8px;
+  border: 1.5px dashed var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 2px;
+  padding: 12px;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-weight: 650;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.load-more:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.my-missing {
+  font-family: 'Noto Sans Myanmar', sans-serif;
+  font-size: 0.72rem;
+  color: color-mix(in srgb, var(--muted) 85%, var(--ink));
+  font-style: normal;
+}
+.en-fallback {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: var(--ink);
+  font-family: inherit;
+  font-style: normal;
+}
+.ken-emphasis {
+  font-weight: 650;
+  color: var(--ink) !important;
+}
 
 body.mode-kanji .level-tabs,
 body.mode-kanji .container,
@@ -98,6 +183,11 @@ body.mode-kanji #kanjiDashboard { display: block; }
   gap: 10px;
   align-items: center;
   margin-bottom: 14px;
+}
+.kanji-filter {
+  overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: none;
 }
 .kanji-search {
   flex: 1 1 220px;
@@ -339,6 +429,6 @@ body.mode-kanji #kanjiDashboard { display: block; }
 
 @media (max-width: 720px) {
   #kanjiDashboard { padding: 14px 14px 70px; }
-  .mode-switch button { padding: 8px 10px; font-size: 0.7rem; }
   .kanji-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+  .kanji-filter button { padding: 9px 10px; font-size: 0.68rem; }
 }

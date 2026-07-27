@@ -2,11 +2,15 @@
 (function () {
   var DATA_URL = './data/vocab.json';
   var STORE_KEY = 'lwm-vocab-v1';
+  var PAGE = 40;
+  var TODAY_N = 10;
   var data = null;
   var level = 'n5';
   var filter = 'all';
   var query = '';
   var current = null;
+  var visible = PAGE;
+  var todayIds = null;
 
   function $(sel, root) {
     return (root || document).querySelector(sel);
@@ -41,6 +45,7 @@
       '<p>JLPT N5–N1 · reading · English · မြန်မာ · examples</p></div>' +
       '<div class="vocab-stats" id="vocabStats"></div>' +
       '</div>' +
+      '<button type="button" class="study-today" id="vocabToday">Today · N5 · 10 語彙</button>' +
       '<div class="vocab-level-tabs" id="vocabLevelTabs" role="tablist">' +
       ['n5', 'n4', 'n3', 'n2', 'n1']
         .map(function (lv, i) {
@@ -56,16 +61,18 @@
         })
         .join('') +
       '</div>' +
-      '<div class="vocab-toolbar">' +
+      '<div class="vocab-toolbar sticky-tools" id="vocabToolbar">' +
       '<input class="vocab-search" id="vocabSearch" type="search" placeholder="単語 / reading / English / မြန်မာ ရှာပါ..." />' +
       '<div class="vocab-filter" id="vocabFilter">' +
       '<button type="button" data-vfilter="all" class="active">All</button>' +
       '<button type="button" data-vfilter="learning">Learning</button>' +
       '<button type="button" data-vfilter="mastered">Mastered</button>' +
       '<button type="button" data-vfilter="fav">Saved</button>' +
+      '<button type="button" data-vfilter="today">Today</button>' +
       '</div>' +
       '</div>' +
       '<div class="vocab-list" id="vocabList"></div>' +
+      '<button type="button" class="load-more" id="vocabMore" hidden>Load more</button>' +
       '<p class="vocab-empty" id="vocabEmpty" hidden>No vocabulary match.</p>' +
       '<p class="vocab-source" id="vocabSource"></p>';
     document.body.appendChild(dash);
@@ -87,15 +94,24 @@
       var b = e.target.closest('[data-vlevel]');
       if (!b) return;
       level = b.getAttribute('data-vlevel');
+      todayIds = null;
+      if (filter === 'today') filter = 'all';
+      visible = PAGE;
       $all('#vocabLevelTabs button').forEach(function (x) {
         x.classList.toggle('active', x === b);
       });
+      $all('#vocabFilter button').forEach(function (x) {
+        x.classList.toggle('active', x.getAttribute('data-vfilter') === filter);
+      });
+      updateTodayBtn();
       renderList();
     });
     $('#vocabFilter').addEventListener('click', function (e) {
       var b = e.target.closest('[data-vfilter]');
       if (!b) return;
       filter = b.getAttribute('data-vfilter');
+      if (filter === 'today' && !todayIds) startToday();
+      visible = PAGE;
       $all('#vocabFilter button').forEach(function (x) {
         x.classList.toggle('active', x === b);
       });
@@ -103,6 +119,20 @@
     });
     $('#vocabSearch').addEventListener('input', function () {
       query = (this.value || '').trim().toLowerCase();
+      visible = PAGE;
+      renderList();
+    });
+    $('#vocabToday').addEventListener('click', function () {
+      startToday();
+      filter = 'today';
+      visible = PAGE;
+      $all('#vocabFilter button').forEach(function (x) {
+        x.classList.toggle('active', x.getAttribute('data-vfilter') === 'today');
+      });
+      renderList();
+    });
+    $('#vocabMore').addEventListener('click', function () {
+      visible += PAGE;
       renderList();
     });
     $('#vocabBack').addEventListener('click', closeDetail);
@@ -165,6 +195,9 @@
     if (filter === 'learning' && st !== 'learning') return false;
     if (filter === 'mastered' && st !== 'mastered') return false;
     if (filter === 'fav' && !store.favorites[v.id]) return false;
+    if (filter === 'today') {
+      if (!todayIds || !todayIds[v.id]) return false;
+    }
     if (!query) return true;
     var hay = [v.w, v.r, (v.en || []).join(' '), (v.my || []).join(' '), v.lv]
       .join(' ')
@@ -172,33 +205,74 @@
     return hay.indexOf(query) !== -1;
   }
 
+  function updateTodayBtn() {
+    var btn = $('#vocabToday');
+    if (!btn) return;
+    btn.textContent = 'Today · ' + level.toUpperCase() + ' · ' + TODAY_N + ' 語彙';
+  }
+
+  function startToday() {
+    var pool = listForLevel().filter(function (v) {
+      return (store.progress[v.id] || {}).status !== 'mastered';
+    });
+    if (!pool.length) pool = listForLevel().slice();
+    for (var i = pool.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = pool[i];
+      pool[i] = pool[j];
+      pool[j] = t;
+    }
+    todayIds = {};
+    pool.slice(0, TODAY_N).forEach(function (v) {
+      todayIds[v.id] = true;
+    });
+    updateTodayBtn();
+  }
+
+  function myLine(myArr, enArr, forCard) {
+    if (myArr && myArr[0]) return escapeHtml(forCard ? myArr[0] : myArr.join('၊ '));
+    if (forCard) return '<span class="my-missing">မြန်မာ မရှိသေး</span>';
+    return (
+      '<span class="my-missing">မြန်မာ မရှိသေး · အောက်က English ကိုကြည့်ပါ</span>' +
+      (enArr && enArr.length
+        ? '<div class="en-fallback">' + escapeHtml(enArr.join(', ')) + '</div>'
+        : '')
+    );
+  }
+
   function renderList() {
     var list = $('#vocabList');
     var empty = $('#vocabEmpty');
     var stats = $('#vocabStats');
+    var more = $('#vocabMore');
     if (!list) return;
+    updateTodayBtn();
     var items = listForLevel().filter(matches);
     var all = listForLevel();
     var mastered = all.filter(function (v) {
       return (store.progress[v.id] || {}).status === 'mastered';
     }).length;
+    var shown = items.slice(0, visible);
     if (stats) {
       stats.textContent =
         level.toUpperCase() +
         ' · ' +
-        items.length +
-        ' shown / ' +
+        shown.length +
+        (items.length > shown.length ? '+' : '') +
+        ' / ' +
         all.length +
         ' · Mastered ' +
         mastered;
     }
     if (!items.length) {
       list.innerHTML = '';
+      if (more) more.hidden = true;
       if (empty) empty.hidden = false;
       return;
     }
     if (empty) empty.hidden = true;
-    list.innerHTML = items
+    if (more) more.hidden = shown.length >= items.length;
+    list.innerHTML = shown
       .map(function (v) {
         var st = (store.progress[v.id] || {}).status || '';
         var cls = 'vocab-card';
@@ -206,6 +280,7 @@
         if (st === 'learning') cls += ' is-learning';
         if (store.favorites[v.id]) cls += ' is-fav';
         var reading = v.r && v.r !== v.w ? v.r : '';
+        var en0 = (v.en && v.en[0]) || '';
         return (
           '<button type="button" class="' +
           cls +
@@ -218,11 +293,13 @@
           '<span class="vr">' +
           escapeHtml(reading) +
           '</span>' +
-          '<div class="ven">' +
-          escapeHtml((v.en && v.en[0]) || '') +
+          '<div class="ven' +
+          (v.my && v.my[0] ? '' : ' ken-emphasis') +
+          '">' +
+          escapeHtml(en0) +
           '</div>' +
           '<div class="vmy">' +
-          escapeHtml((v.my && v.my[0]) || '') +
+          myLine(v.my, v.en, true) +
           '</div>' +
           '</button>'
         );
@@ -273,11 +350,13 @@
       escapeHtml(v.lv) +
       '</div>' +
       '<div class="vocab-actions" id="vocabActs"></div>' +
-      '<div class="vocab-block"><h3>English</h3><div class="meanings">' +
+      '<div class="vocab-block"><h3>English</h3><div class="meanings' +
+      (v.my && v.my.length ? '' : ' ken-emphasis') +
+      '">' +
       escapeHtml((v.en || []).join(', ')) +
       '</div></div>' +
       '<div class="vocab-block"><h3>မြန်မာ</h3><div class="meanings my">' +
-      escapeHtml(v.my && v.my.length ? v.my.join('၊ ') : '— (EN ကိုကြည့်ပါ)') +
+      (v.my && v.my.length ? escapeHtml(v.my.join('၊ ')) : myLine(null, v.en, false)) +
       '</div></div>' +
       exHtml;
     refreshDetailActions();

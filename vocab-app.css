@@ -75,6 +75,11 @@ body.mode-vocab #vocabDashboard { display: block; }
   align-items: center;
   margin-bottom: 14px;
 }
+.vocab-filter {
+  overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: none;
+}
 .vocab-search {
   flex: 1 1 220px;
   border: 1.5px solid var(--border);
@@ -326,4 +331,5 @@ body.mode-vocab #vocabDashboard { display: block; }
     grid-column: 1;
     grid-row: auto;
   }
+  .vocab-filter button { padding: 9px 10px; font-size: 0.68rem; }
 }

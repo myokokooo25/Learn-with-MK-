@@ -2,6 +2,10 @@ node_modules/
 www/
 data/raw-kanji-*.json
 data/raw-vocab-*.json
+data/gemini-my-cache.json
+.env
+.env.local
+.env.*.local
 .DS_Store
 *.log
 *.apk

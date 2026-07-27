@@ -26,6 +26,7 @@ Vocabulary entries (word, reading, English meanings, JLPT level, example sentenc
 are derived from **[OpenJLPT](https://github.com/evanclan/OpenJLPT)** by evanclan
 (same CC BY-SA 4.0 stack as kanji: JMDict-style glosses + Waller JLPT lists / tanos.co.uk).
 
-Myanmar glosses in `data/vocab.json` were added by **Learn with MK** via English→Myanmar
-keyword mapping. Coverage is strongest for common N5–N3 terms; where no Myanmar gloss
-exists, the English meaning is shown.
+Myanmar glosses in `data/vocab.json` and `data/kanji.json` were added by **Learn with MK**
+via English→Myanmar keyword mapping, then expanded with Cursor-agent curated gloss maps
+in `scripts/cursor-my-maps/` (applied by `npm run my:apply`). Coverage is strongest for
+N5–N4; higher levels still fall back to English where no Myanmar gloss exists.

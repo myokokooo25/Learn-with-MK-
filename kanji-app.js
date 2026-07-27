@@ -2,11 +2,15 @@
 (function () {
   var DATA_URL = './data/kanji.json';
   var STORE_KEY = 'lwm-kanji-v1';
+  var PAGE = 48;
+  var TODAY_N = 10;
   var data = null;
   var level = 'n5';
   var filter = 'all';
   var query = '';
   var current = null;
+  var visible = PAGE;
+  var todayIds = null;
 
   function $(sel, root) {
     return (root || document).querySelector(sel);
@@ -47,6 +51,7 @@
       '<p>JLPT N5–N1 · onyomi / kunyomi · English · မြန်မာ · strokes</p></div>' +
       '<div class="kanji-stats" id="kanjiStats"></div>' +
       '</div>' +
+      '<button type="button" class="study-today" id="kanjiToday">Today · N5 · 10 漢字</button>' +
       '<div class="kanji-level-tabs" id="kanjiLevelTabs" role="tablist">' +
       ['n5', 'n4', 'n3', 'n2', 'n1']
         .map(function (lv, i) {
@@ -62,16 +67,18 @@
         })
         .join('') +
       '</div>' +
-      '<div class="kanji-toolbar">' +
+      '<div class="kanji-toolbar sticky-tools" id="kanjiToolbar">' +
       '<input class="kanji-search" id="kanjiSearch" type="search" placeholder="漢字 / reading / English / မြန်မာ ရှာပါ..." />' +
       '<div class="kanji-filter" id="kanjiFilter">' +
       '<button type="button" data-kfilter="all" class="active">All</button>' +
       '<button type="button" data-kfilter="learning">Learning</button>' +
       '<button type="button" data-kfilter="mastered">Mastered</button>' +
       '<button type="button" data-kfilter="fav">Saved</button>' +
+      '<button type="button" data-kfilter="today">Today</button>' +
       '</div>' +
       '</div>' +
       '<div class="kanji-grid" id="kanjiGrid"></div>' +
+      '<button type="button" class="load-more" id="kanjiMore" hidden>Load more</button>' +
       '<p class="kanji-empty" id="kanjiEmpty" hidden>No kanji match.</p>' +
       '<p class="kanji-source" id="kanjiSource"></p>';
     document.body.appendChild(dash);
@@ -93,15 +100,24 @@
       var b = e.target.closest('[data-klevel]');
       if (!b) return;
       level = b.getAttribute('data-klevel');
+      todayIds = null;
+      if (filter === 'today') filter = 'all';
+      visible = PAGE;
       $all('#kanjiLevelTabs button').forEach(function (x) {
         x.classList.toggle('active', x === b);
       });
+      $all('#kanjiFilter button').forEach(function (x) {
+        x.classList.toggle('active', x.getAttribute('data-kfilter') === filter);
+      });
+      updateTodayBtn();
       renderGrid();
     });
     $('#kanjiFilter').addEventListener('click', function (e) {
       var b = e.target.closest('[data-kfilter]');
       if (!b) return;
       filter = b.getAttribute('data-kfilter');
+      if (filter === 'today' && !todayIds) startToday();
+      visible = PAGE;
       $all('#kanjiFilter button').forEach(function (x) {
         x.classList.toggle('active', x === b);
       });
@@ -109,6 +125,20 @@
     });
     $('#kanjiSearch').addEventListener('input', function () {
       query = (this.value || '').trim().toLowerCase();
+      visible = PAGE;
+      renderGrid();
+    });
+    $('#kanjiToday').addEventListener('click', function () {
+      startToday();
+      filter = 'today';
+      visible = PAGE;
+      $all('#kanjiFilter button').forEach(function (x) {
+        x.classList.toggle('active', x.getAttribute('data-kfilter') === 'today');
+      });
+      renderGrid();
+    });
+    $('#kanjiMore').addEventListener('click', function () {
+      visible += PAGE;
       renderGrid();
     });
     $('#kanjiBack').addEventListener('click', closeDetail);
@@ -135,9 +165,9 @@
     sw.className = 'mode-switch';
     sw.id = 'modeSwitch';
     sw.innerHTML =
-      '<button type="button" data-app-mode="grammar" class="active">Grammar</button>' +
-      '<button type="button" data-app-mode="kanji">Kanji</button>' +
-      '<button type="button" data-app-mode="vocab">Vocab</button>';
+      '<button type="button" data-app-mode="grammar" class="active"><span class="ms-full">Grammar</span><span class="ms-short" aria-hidden="true">文</span></button>' +
+      '<button type="button" data-app-mode="kanji"><span class="ms-full">Kanji</span><span class="ms-short" aria-hidden="true">漢</span></button>' +
+      '<button type="button" data-app-mode="vocab"><span class="ms-full">Vocab</span><span class="ms-short" aria-hidden="true">語</span></button>';
     actions.insertBefore(sw, actions.firstChild);
     sw.addEventListener('click', function (e) {
       var b = e.target.closest('[data-app-mode]');
@@ -233,6 +263,9 @@
     if (filter === 'learning' && st !== 'learning') return false;
     if (filter === 'mastered' && st !== 'mastered') return false;
     if (filter === 'fav' && !store.favorites[k.id]) return false;
+    if (filter === 'today') {
+      if (!todayIds || !todayIds[k.id]) return false;
+    }
     if (!query) return true;
     var hay = [k.c, k.en.join(' '), k.my.join(' '), k.on.join(' '), k.kun.join(' '), k.lv]
       .join(' ')
@@ -240,39 +273,81 @@
     return hay.indexOf(query) !== -1;
   }
 
+  function updateTodayBtn() {
+    var btn = $('#kanjiToday');
+    if (!btn) return;
+    btn.textContent = 'Today · ' + level.toUpperCase() + ' · ' + TODAY_N + ' 漢字';
+  }
+
+  function startToday() {
+    var pool = listForLevel().filter(function (k) {
+      return (store.progress[k.id] || {}).status !== 'mastered';
+    });
+    if (!pool.length) pool = listForLevel().slice();
+    for (var i = pool.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = pool[i];
+      pool[i] = pool[j];
+      pool[j] = t;
+    }
+    todayIds = {};
+    pool.slice(0, TODAY_N).forEach(function (k) {
+      todayIds[k.id] = true;
+    });
+    updateTodayBtn();
+  }
+
+  function myLine(myArr, enArr, forCard) {
+    if (myArr && myArr[0]) return escapeHtml(myArr[0]);
+    if (forCard) return '<span class="my-missing">မြန်မာ မရှိသေး</span>';
+    return (
+      '<span class="my-missing">မြန်မာ မရှိသေး · အောက်က English ကိုကြည့်ပါ</span>' +
+      (enArr && enArr.length
+        ? '<div class="en-fallback">' + escapeHtml(enArr.join(', ')) + '</div>'
+        : '')
+    );
+  }
+
   function renderGrid() {
     var grid = $('#kanjiGrid');
     var empty = $('#kanjiEmpty');
     var stats = $('#kanjiStats');
+    var more = $('#kanjiMore');
     if (!grid) return;
+    updateTodayBtn();
     var items = listForLevel().filter(matches);
     var all = listForLevel();
     var mastered = all.filter(function (k) {
       return (store.progress[k.id] || {}).status === 'mastered';
     }).length;
+    var shown = items.slice(0, visible);
     if (stats) {
       stats.textContent =
         level.toUpperCase() +
         ' · ' +
-        items.length +
-        ' shown / ' +
+        shown.length +
+        (items.length > shown.length ? '+' : '') +
+        ' / ' +
         all.length +
         ' · Mastered ' +
         mastered;
     }
     if (!items.length) {
       grid.innerHTML = '';
+      if (more) more.hidden = true;
       if (empty) empty.hidden = false;
       return;
     }
     if (empty) empty.hidden = true;
-    grid.innerHTML = items
+    if (more) more.hidden = shown.length >= items.length;
+    grid.innerHTML = shown
       .map(function (k) {
         var st = (store.progress[k.id] || {}).status || '';
         var cls = 'kanji-card';
         if (st === 'mastered') cls += ' is-mastered';
         if (st === 'learning') cls += ' is-learning';
         if (store.favorites[k.id]) cls += ' is-fav';
+        var en0 = (k.en && k.en[0]) || '';
         return (
           '<button type="button" class="' +
           cls +
@@ -287,11 +362,13 @@
           ' strokes · ' +
           k.lv +
           '</div>' +
-          '<div class="ken">' +
-          escapeHtml((k.en && k.en[0]) || '') +
+          '<div class="ken' +
+          (k.my && k.my[0] ? '' : ' ken-emphasis') +
+          '">' +
+          escapeHtml(en0) +
           '</div>' +
           '<div class="kmy">' +
-          escapeHtml((k.my && k.my[0]) || '') +
+          myLine(k.my, k.en, true) +
           '</div>' +
           '</button>'
         );
@@ -333,11 +410,15 @@
       '<div class="kanji-block"><h3>Kunyomi · 訓読み</h3><div class="readings">' +
       escapeHtml(kun) +
       '</div></div>' +
-      '<div class="kanji-block"><h3>English</h3><div class="meanings">' +
+      '<div class="kanji-block"><h3>English</h3><div class="meanings' +
+      (k.my && k.my.length ? '' : ' ken-emphasis') +
+      '">' +
       escapeHtml((k.en || []).join(', ')) +
       '</div></div>' +
       '<div class="kanji-block"><h3>မြန်မာ</h3><div class="meanings my">' +
-      escapeHtml((k.my && k.my.length ? k.my.join('၊ ') : '— (EN ကိုကြည့်ပါ)')) +
+      (k.my && k.my.length
+        ? escapeHtml(k.my.join('၊ '))
+        : myLine(null, k.en, false)) +
       '</div></div>' +
       '<div class="kanji-block"><h3>Stroke order · ' +
       k.st +

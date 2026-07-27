@@ -1,4 +1,4 @@
-const CACHE = 'lwm-v13';
+const CACHE = 'lwm-v16';
 const ASSETS = [
   './',
   './index.html',
