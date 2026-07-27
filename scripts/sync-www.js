@@ -10,6 +10,8 @@ const files = [
   'app-features.js',
   'kanji-app.css',
   'kanji-app.js',
+  'vocab-app.css',
+  'vocab-app.js',
   'manifest.webmanifest',
   'sw.js',
   'icon.svg',
@@ -29,10 +31,12 @@ for (const file of files) {
   console.log('copied', file);
 }
 
-const kanjiSrc = path.join(root, 'data', 'kanji.json');
-if (fs.existsSync(kanjiSrc)) {
-  fs.copyFileSync(kanjiSrc, path.join(www, 'data', 'kanji.json'));
-  console.log('copied data/kanji.json');
-}
+['kanji.json', 'vocab.json'].forEach(function (name) {
+  const src = path.join(root, 'data', name);
+  if (fs.existsSync(src)) {
+    fs.copyFileSync(src, path.join(www, 'data', name));
+    console.log('copied data/' + name);
+  }
+});
 
 console.log('www ready →', www);

@@ -1,4 +1,4 @@
-const CACHE = 'lwm-v12';
+const CACHE = 'lwm-v13';
 const ASSETS = [
   './',
   './index.html',
@@ -6,7 +6,10 @@ const ASSETS = [
   './app-features.js',
   './kanji-app.css',
   './kanji-app.js',
+  './vocab-app.css',
+  './vocab-app.js',
   './data/kanji.json',
+  './data/vocab.json',
   './manifest.webmanifest',
   './icon.svg',
 ];

@@ -6,6 +6,7 @@
   "scripts": {
     "web:sync": "node scripts/sync-www.js",
     "kanji:build": "node scripts/build-kanji-data.js",
+    "vocab:build": "node scripts/build-vocab-data.js",
     "cap:add": "npm run web:sync && npx cap add android",
     "cap:sync": "npm run web:sync && npx cap sync android",
     "android:open": "npx cap open android",

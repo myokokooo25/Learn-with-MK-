@@ -136,7 +136,8 @@
     sw.id = 'modeSwitch';
     sw.innerHTML =
       '<button type="button" data-app-mode="grammar" class="active">Grammar</button>' +
-      '<button type="button" data-app-mode="kanji">Kanji</button>';
+      '<button type="button" data-app-mode="kanji">Kanji</button>' +
+      '<button type="button" data-app-mode="vocab">Vocab</button>';
     actions.insertBefore(sw, actions.firstChild);
     sw.addEventListener('click', function (e) {
       var b = e.target.closest('[data-app-mode]');
@@ -147,7 +148,9 @@
 
   function setMode(mode) {
     var isKanji = mode === 'kanji';
+    var isVocab = mode === 'vocab';
     document.body.classList.toggle('mode-kanji', isKanji);
+    document.body.classList.toggle('mode-vocab', isVocab);
     $all('#modeSwitch button').forEach(function (b) {
       b.classList.toggle('active', b.getAttribute('data-app-mode') === mode);
     });
@@ -155,25 +158,37 @@
     if (tag) {
       tag.textContent = isKanji
         ? 'JLPT kanji desk · Myanmar + English'
-        : 'JLPT grammar desk · Myanmar explanations';
+        : isVocab
+          ? 'JLPT vocab desk · Myanmar + English'
+          : 'JLPT grammar desk · Myanmar explanations';
     }
     var kicker = $('.mast-kicker');
     if (kicker) {
       kicker.textContent = isKanji
         ? '日本語漢字 · ဂျပန်ခန်းဂျိ'
-        : '日本語文法 · ဂျပန်သဒ္ဒါ';
+        : isVocab
+          ? '日本語語彙 · ဂျပန်ဝေါဟာရ'
+          : '日本語文法 · ဂျပန်သဒ္ဒါ';
     }
     if (isKanji) {
       ensureData().then(renderGrid);
       try {
         history.replaceState({ lwmMode: 'kanji' }, '', '#kanji');
       } catch (e) {}
+    } else if (isVocab) {
+      closeDetail();
+      try {
+        history.replaceState({ lwmMode: 'vocab' }, '', '#vocab');
+      } catch (e) {}
     } else {
       closeDetail();
       try {
-        if (location.hash === '#kanji') history.replaceState({}, '', location.pathname + location.search);
+        if (location.hash === '#kanji' || location.hash === '#vocab') {
+          history.replaceState({}, '', location.pathname + location.search);
+        }
       } catch (e) {}
     }
+    if (window.lwmVocabOnMode) window.lwmVocabOnMode(mode);
   }
 
   function ensureData() {
@@ -443,6 +458,7 @@
       if ($('.mast-actions')) {
         injectModeSwitch();
         if (location.hash === '#kanji') setMode('kanji');
+        else if (location.hash === '#vocab') setMode('vocab');
         return;
       }
       if (tries < 40) setTimeout(wait, 50);

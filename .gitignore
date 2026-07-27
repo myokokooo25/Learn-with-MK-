@@ -1,6 +1,7 @@
 node_modules/
 www/
 data/raw-kanji-*.json
+data/raw-vocab-*.json
 .DS_Store
 *.log
 *.apk

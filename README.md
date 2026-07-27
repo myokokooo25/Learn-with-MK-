@@ -33,13 +33,19 @@ Then run or build an APK from Android Studio.
 - Progress tracking (Learning / Mastered) with per-level %
 - Favorites, quizzes (N5–N1), SRS review, TTS, notes, print, PWA
 
-**Kanji (new dashboard)**
+**Kanji (dashboard)**
 - JLPT N5–N1 kanji grid (2,211 characters)
 - Onyomi / kunyomi / English / Myanmar / stroke count
 - Stroke-order diagram (KanjiVG, when online)
 - Save / Learning / Mastered per kanji
 - Search by character, reading, English, or Myanmar
 
-Toggle **Grammar | Kanji** in the header. Data sources: see [DATA_ATTRIBUTION.md](./DATA_ATTRIBUTION.md).
+**Vocabulary · 語彙 (dashboard)**
+- JLPT N5–N1 word list (8,334 entries from OpenJLPT)
+- Reading / English / Myanmar / example sentence
+- Save / Learning / Mastered per word
+- Search by word, reading, English, or Myanmar
+
+Toggle **Grammar | Kanji | Vocab** in the header. Data sources: see [DATA_ATTRIBUTION.md](./DATA_ATTRIBUTION.md).
 
 Progress is stored in your browser / WebView (`localStorage`).

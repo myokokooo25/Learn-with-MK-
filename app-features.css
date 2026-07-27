@@ -860,7 +860,8 @@ body::before {
 
 body.detail-open,
 body.lwm-panel-open,
-body.kanji-detail-open {
+body.kanji-detail-open,
+body.vocab-detail-open {
   overflow: hidden;
   touch-action: none;
 }

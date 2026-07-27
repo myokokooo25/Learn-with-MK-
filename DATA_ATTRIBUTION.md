@@ -19,3 +19,13 @@ where no Myanmar gloss exists, the English meaning is shown.
 Stroke-order SVGs are loaded at runtime from **[KanjiVG](https://github.com/KanjiVG/kanjivg)**
 via jsDelivr CDN when the device is online (KanjiVG license: CC BY-SA 3.0).
 Stroke **counts** are always available offline from the local JSON.
+
+## Vocabulary dataset
+
+Vocabulary entries (word, reading, English meanings, JLPT level, example sentences)
+are derived from **[OpenJLPT](https://github.com/evanclan/OpenJLPT)** by evanclan
+(same CC BY-SA 4.0 stack as kanji: JMDict-style glosses + Waller JLPT lists / tanos.co.uk).
+
+Myanmar glosses in `data/vocab.json` were added by **Learn with MK** via English→Myanmar
+keyword mapping. Coverage is strongest for common N5–N3 terms; where no Myanmar gloss
+exists, the English meaning is shown.
